@@ -24,21 +24,15 @@ public class GunsProperties {
 
     private Boolean swaggerOpen = false;
 
-    private String fileUploadPath;
+    private String fileUploadPath="D:\\idea\\guns\\guns-admin\\src\\main\\webapp\\kaptcha";//上传图片的路径 D:\idea\guns\guns-admin\src\main\webapp\kaptcha
 
     private Boolean haveCreatePath = false;
 
     private Boolean springSessionOpen = false;
 
-    /**
-     * session 失效时间（默认为30分钟 单位：秒）
-     */
-    private Integer sessionInvalidateTime = 30 * 60;
+    private Integer sessionInvalidateTime = 30 * 60;  //session 失效时间（默认为30分钟 单位：秒）
 
-    /**
-     * session 验证失效时间（默认为15分钟 单位：秒）
-     */
-    private Integer sessionValidationInterval = 15 * 60;
+    private Integer sessionValidationInterval = 15 * 60;  //session 验证失效时间（默认为15分钟 单位：秒）
 
     public String getFileUploadPath() {
         //如果没有写文件上传路径,保存到临时目录
@@ -50,7 +44,7 @@ public class GunsProperties {
                 fileUploadPath = fileUploadPath + File.separator;
             }
             //判断目录存不存在,不存在得加上
-            if (!haveCreatePath) {
+            if (haveCreatePath == false) {
                 File file = new File(fileUploadPath);
                 file.mkdirs();
                 haveCreatePath = true;

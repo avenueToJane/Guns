@@ -4,11 +4,15 @@ import com.google.code.kaptcha.Constants;
 import com.google.code.kaptcha.Producer;
 import com.stylefeng.guns.config.properties.GunsProperties;
 import com.stylefeng.guns.core.util.FileUtil;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
+import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -23,20 +27,22 @@ import java.io.IOException;
  * @author fengshuonan
  * @date 2017-05-05 23:10
  */
+@Api("验证码生成")
 @Controller
 @RequestMapping("/kaptcha")
 public class KaptchaController {
 
-    @Autowired
+    @Resource
     private GunsProperties gunsProperties;
 
     @Autowired
-    private Producer producer;
+    Producer producer;
 
     /**
      * 生成验证码
      */
-    @RequestMapping("")
+    @ApiOperation("生成验证码")
+    @RequestMapping(value = "",method ={RequestMethod.POST,RequestMethod.GET})
     public void index(HttpServletRequest request, HttpServletResponse response) {
         HttpSession session = request.getSession();
 
@@ -96,7 +102,8 @@ public class KaptchaController {
      * @author stylefeng
      * @Date 2017/5/24 23:00
      */
-    @RequestMapping("/{pictureId}")
+    @ApiOperation("返回图片")
+    @RequestMapping(value="/{pictureId}",method ={RequestMethod.POST,RequestMethod.GET})
     public void renderPicture(@PathVariable("pictureId") String pictureId, HttpServletResponse response) {
         String path = gunsProperties.getFileUploadPath() + pictureId + ".jpg";
         try {

@@ -55,7 +55,7 @@ public class ProcessController extends BaseController {
     @ResponseBody
     public Object pass(String taskId) {
         expenseService.pass(taskId);
-        return SUCCESS_TIP;
+        return super.SUCCESS_TIP;
     }
 
     /**
@@ -65,6 +65,6 @@ public class ProcessController extends BaseController {
     @ResponseBody
     public Object unPass(String taskId) {
         expenseService.unPass(taskId);
-        return SUCCESS_TIP;
+        return super.SUCCESS_TIP;
     }
 }

@@ -1,27 +1,28 @@
 package com.stylefeng.guns.modular.system.controller;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.stylefeng.guns.common.annotion.BussinessLog;
+import com.stylefeng.guns.common.annotion.Permission;
+import com.stylefeng.guns.common.constant.Const;
+import com.stylefeng.guns.common.constant.dictmap.DictMap;
+import com.stylefeng.guns.common.constant.factory.ConstantFactory;
+import com.stylefeng.guns.common.exception.BizExceptionEnum;
+import com.stylefeng.guns.common.persistence.dao.DictMapper;
+import com.stylefeng.guns.common.persistence.model.Dict;
 import com.stylefeng.guns.core.base.controller.BaseController;
-import com.stylefeng.guns.core.common.annotion.BussinessLog;
-import com.stylefeng.guns.core.common.annotion.Permission;
-import com.stylefeng.guns.core.common.constant.Const;
-import com.stylefeng.guns.core.common.constant.dictmap.DictMap;
-import com.stylefeng.guns.core.common.constant.factory.ConstantFactory;
-import com.stylefeng.guns.core.common.exception.BizExceptionEnum;
 import com.stylefeng.guns.core.exception.GunsException;
 import com.stylefeng.guns.core.log.LogObjectHolder;
 import com.stylefeng.guns.core.util.ToolUtil;
-import com.stylefeng.guns.modular.system.model.Dict;
+import com.stylefeng.guns.modular.system.dao.DictDao;
 import com.stylefeng.guns.modular.system.service.IDictService;
 import com.stylefeng.guns.modular.system.warpper.DictWarpper;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 
@@ -31,19 +32,27 @@ import java.util.Map;
  * @author fengshuonan
  * @Date 2017年4月26日 12:55:31
  */
+@Api("字典控制器")
 @Controller
 @RequestMapping("/dict")
 public class DictController extends BaseController {
 
     private String PREFIX = "/system/dict/";
 
-    @Autowired
-    private IDictService dictService;
+    @Resource
+    DictDao dictDao;
+
+    @Resource
+    DictMapper dictMapper;
+
+    @Resource
+    IDictService dictService;
 
     /**
      * 跳转到字典管理首页
      */
-    @RequestMapping("")
+    @ApiOperation("跳转到字典管理首页")
+    @RequestMapping(value = "",method ={RequestMethod.POST,RequestMethod.GET})
     public String index() {
         return PREFIX + "dict.html";
     }
@@ -51,7 +60,8 @@ public class DictController extends BaseController {
     /**
      * 跳转到添加字典
      */
-    @RequestMapping("/dict_add")
+    @ApiOperation("跳转到添加字典")
+    @RequestMapping(value = "/dict_add",method ={RequestMethod.POST,RequestMethod.GET})
     public String deptAdd() {
         return PREFIX + "dict_add.html";
     }
@@ -59,12 +69,13 @@ public class DictController extends BaseController {
     /**
      * 跳转到修改字典
      */
+    @ApiOperation("跳转到修改字典")
     @Permission(Const.ADMIN_NAME)
-    @RequestMapping("/dict_edit/{dictId}")
+    @RequestMapping(value = "/dict_edit/{dictId}",method ={RequestMethod.POST,RequestMethod.GET})
     public String deptUpdate(@PathVariable Integer dictId, Model model) {
-        Dict dict = dictService.selectById(dictId);
+        Dict dict = dictMapper.selectById(dictId);
         model.addAttribute("dict", dict);
-        List<Dict> subDicts = dictService.selectList(new EntityWrapper<Dict>().eq("pid", dictId));
+        List<Dict> subDicts = dictMapper.selectList(new EntityWrapper<Dict>().eq("pid", dictId));
         model.addAttribute("subDicts", subDicts);
         LogObjectHolder.me().set(dict);
         return PREFIX + "dict_edit.html";
@@ -75,8 +86,9 @@ public class DictController extends BaseController {
      *
      * @param dictValues 格式例如   "1:启用;2:禁用;3:冻结"
      */
+    @ApiOperation("新增字典")
     @BussinessLog(value = "添加字典记录", key = "dictName,dictValues", dict = DictMap.class)
-    @RequestMapping(value = "/add")
+    @RequestMapping(value = "/add",method ={RequestMethod.POST,RequestMethod.GET})
     @Permission(Const.ADMIN_NAME)
     @ResponseBody
     public Object add(String dictName, String dictValues) {
@@ -90,29 +102,32 @@ public class DictController extends BaseController {
     /**
      * 获取所有字典列表
      */
-    @RequestMapping(value = "/list")
+    @ApiOperation("获取所有字典列表")
+    @RequestMapping(value = "/list",method ={RequestMethod.POST,RequestMethod.GET})
     @Permission(Const.ADMIN_NAME)
     @ResponseBody
     public Object list(String condition) {
-        List<Map<String, Object>> list = this.dictService.list(condition);
+        List<Map<String, Object>> list = this.dictDao.list(condition);
         return super.warpObject(new DictWarpper(list));
     }
 
     /**
      * 字典详情
      */
-    @RequestMapping(value = "/detail/{dictId}")
+    @ApiOperation("字典详情")
+    @RequestMapping(value = "/detail/{dictId}",method ={RequestMethod.POST,RequestMethod.GET})
     @Permission(Const.ADMIN_NAME)
     @ResponseBody
     public Object detail(@PathVariable("dictId") Integer dictId) {
-        return dictService.selectById(dictId);
+        return dictMapper.selectById(dictId);
     }
 
     /**
      * 修改字典
      */
+    @ApiOperation("修改字典")
     @BussinessLog(value = "修改字典", key = "dictName,dictValues", dict = DictMap.class)
-    @RequestMapping(value = "/update")
+    @RequestMapping(value = "/update",method ={RequestMethod.POST,RequestMethod.GET})
     @Permission(Const.ADMIN_NAME)
     @ResponseBody
     public Object update(Integer dictId, String dictName, String dictValues) {
@@ -120,14 +135,15 @@ public class DictController extends BaseController {
             throw new GunsException(BizExceptionEnum.REQUEST_NULL);
         }
         dictService.editDict(dictId, dictName, dictValues);
-        return SUCCESS_TIP;
+        return super.SUCCESS_TIP;
     }
 
     /**
      * 删除字典记录
      */
+    @ApiOperation("删除字典记录")
     @BussinessLog(value = "删除字典记录", key = "dictId", dict = DictMap.class)
-    @RequestMapping(value = "/delete")
+    @RequestMapping(value = "/delete",method ={RequestMethod.POST,RequestMethod.GET})
     @Permission(Const.ADMIN_NAME)
     @ResponseBody
     public Object delete(@RequestParam Integer dictId) {

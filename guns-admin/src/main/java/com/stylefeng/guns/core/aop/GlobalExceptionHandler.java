@@ -1,7 +1,7 @@
 package com.stylefeng.guns.core.aop;
 
-import com.stylefeng.guns.core.common.exception.BizExceptionEnum;
-import com.stylefeng.guns.core.common.exception.InvalidKaptchaException;
+import com.stylefeng.guns.common.exception.BizExceptionEnum;
+import com.stylefeng.guns.common.exception.InvalidKaptchaException;
 import com.stylefeng.guns.core.base.tips.ErrorTip;
 import com.stylefeng.guns.core.exception.GunsException;
 import com.stylefeng.guns.core.log.LogManager;
@@ -39,6 +39,8 @@ public class GlobalExceptionHandler {
 
     /**
      * 拦截业务异常
+     *
+     * @author fengshuonan
      */
     @ExceptionHandler(GunsException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -51,7 +53,9 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 用户未登录异常
+     * 用户未登录
+     *
+     * @author fengshuonan
      */
     @ExceptionHandler(AuthenticationException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
@@ -61,7 +65,9 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 账号被冻结异常
+     * 账号被冻结
+     *
+     * @author fengshuonan
      */
     @ExceptionHandler(DisabledAccountException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
@@ -73,7 +79,9 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 账号密码错误异常
+     * 账号密码错误
+     *
+     * @author fengshuonan
      */
     @ExceptionHandler(CredentialsException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
@@ -85,7 +93,9 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 验证码错误异常
+     * 验证码错误
+     *
+     * @author fengshuonan
      */
     @ExceptionHandler(InvalidKaptchaException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -97,7 +107,9 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 无权访问该资源异常
+     * 无权访问该资源
+     *
+     * @author fengshuonan
      */
     @ExceptionHandler(UndeclaredThrowableException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
@@ -105,11 +117,13 @@ public class GlobalExceptionHandler {
     public ErrorTip credentials(UndeclaredThrowableException e) {
         getRequest().setAttribute("tip", "权限异常");
         log.error("权限异常!", e);
-        return new ErrorTip(BizExceptionEnum.NO_PERMITION.getCode(), BizExceptionEnum.NO_PERMITION.getMessage());
+        return new ErrorTip(BizExceptionEnum.NO_PERMITION.getCode(),BizExceptionEnum.NO_PERMITION.getMessage());
     }
 
     /**
      * 拦截未知的运行时异常
+     *
+     * @author fengshuonan
      */
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -118,6 +132,6 @@ public class GlobalExceptionHandler {
         LogManager.me().executeLog(LogTaskFactory.exceptionLog(ShiroKit.getUser().getId(), e));
         getRequest().setAttribute("tip", "服务器未知运行时异常");
         log.error("运行时异常:", e);
-        return new ErrorTip(BizExceptionEnum.SERVER_ERROR.getCode(), BizExceptionEnum.SERVER_ERROR.getMessage());
+        return new ErrorTip(BizExceptionEnum.SERVER_ERROR.getCode(),BizExceptionEnum.SERVER_ERROR.getMessage());
     }
 }

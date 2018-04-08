@@ -12,4 +12,5 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 @ConditionalOnProperty(prefix = "guns", name = "spring-session-open", havingValue = "true")
 public class SpringSessionConfig {
 
+
 }

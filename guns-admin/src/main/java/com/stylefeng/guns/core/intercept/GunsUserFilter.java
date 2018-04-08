@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @since 0.9
  */
+//AccessControlFilter是shiro-web模块当中比较重要的类,所有的拦截器都继承此类
 public class GunsUserFilter extends AccessControlFilter {
 
     /**

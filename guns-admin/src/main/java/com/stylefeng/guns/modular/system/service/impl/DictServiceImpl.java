@@ -2,11 +2,11 @@ package com.stylefeng.guns.modular.system.service.impl;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
-import com.baomidou.mybatisplus.service.impl.ServiceImpl;
-import com.stylefeng.guns.core.common.exception.BizExceptionEnum;
+import com.stylefeng.guns.common.exception.BizExceptionEnum;
+import com.stylefeng.guns.common.persistence.dao.DictMapper;
+import com.stylefeng.guns.common.persistence.model.Dict;
 import com.stylefeng.guns.core.exception.GunsException;
-import com.stylefeng.guns.modular.system.dao.DictMapper;
-import com.stylefeng.guns.modular.system.model.Dict;
+import com.stylefeng.guns.modular.system.dao.DictDao;
 import com.stylefeng.guns.modular.system.service.IDictService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,20 +15,23 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 
-import static com.stylefeng.guns.core.common.constant.factory.MutiStrFactory.*;
+import static com.stylefeng.guns.common.constant.factory.MutiStrFactory.*;
 
 @Service
 @Transactional
-public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements IDictService {
+public class DictServiceImpl implements IDictService {
 
     @Resource
-    private DictMapper dictMapper;
+    DictDao dictDao;
+
+    @Resource
+    DictMapper dictMapper;
 
     @Override
     public void addDict(String dictName, String dictValues) {
         //判断有没有该字典
         List<Dict> dicts = dictMapper.selectList(new EntityWrapper<Dict>().eq("name", dictName).and().eq("pid", 0));
-        if (dicts != null && dicts.size() > 0) {
+        if(dicts != null && dicts.size() > 0){
             throw new GunsException(BizExceptionEnum.DICT_EXISTED);
         }
 
@@ -51,7 +54,7 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements ID
             itemDict.setName(name);
             try {
                 itemDict.setNum(Integer.valueOf(num));
-            } catch (NumberFormatException e) {
+            }catch (NumberFormatException e){
                 throw new GunsException(BizExceptionEnum.DICT_MUST_BE_NUMBER);
             }
             this.dictMapper.insert(itemDict);
@@ -64,7 +67,7 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements ID
         this.delteDict(dictId);
 
         //重新添加新的字典
-        this.addDict(dictName, dicts);
+        this.addDict(dictName,dicts);
     }
 
     @Override
@@ -76,15 +79,5 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements ID
 
         //删除这个词典
         dictMapper.deleteById(dictId);
-    }
-
-    @Override
-    public List<Dict> selectByCode(String code) {
-        return this.baseMapper.selectByCode(code);
-    }
-
-    @Override
-    public List<Map<String, Object>> list(String conditiion) {
-        return this.baseMapper.list(conditiion);
     }
 }

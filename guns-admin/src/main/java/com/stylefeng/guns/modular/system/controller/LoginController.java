@@ -1,8 +1,10 @@
 package com.stylefeng.guns.modular.system.controller;
 
 import com.google.code.kaptcha.Constants;
+import com.stylefeng.guns.common.exception.InvalidKaptchaException;
+import com.stylefeng.guns.common.persistence.dao.UserMapper;
+import com.stylefeng.guns.common.persistence.model.User;
 import com.stylefeng.guns.core.base.controller.BaseController;
-import com.stylefeng.guns.core.common.exception.InvalidKaptchaException;
 import com.stylefeng.guns.core.log.LogManager;
 import com.stylefeng.guns.core.log.factory.LogTaskFactory;
 import com.stylefeng.guns.core.node.MenuNode;
@@ -11,9 +13,9 @@ import com.stylefeng.guns.core.shiro.ShiroUser;
 import com.stylefeng.guns.core.util.ApiMenuFilter;
 import com.stylefeng.guns.core.util.KaptchaUtil;
 import com.stylefeng.guns.core.util.ToolUtil;
-import com.stylefeng.guns.modular.system.model.User;
-import com.stylefeng.guns.modular.system.service.IMenuService;
-import com.stylefeng.guns.modular.system.service.IUserService;
+import com.stylefeng.guns.modular.system.dao.MenuDao;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,37 +34,39 @@ import static com.stylefeng.guns.core.support.HttpKit.getIp;
  * @author fengshuonan
  * @Date 2017年1月10日 下午8:25:24
  */
+@Api("登录控制器")
 @Controller
 public class LoginController extends BaseController {
 
     @Autowired
-    private IMenuService menuService;
+    MenuDao menuDao;
 
     @Autowired
-    private IUserService userService;
+    UserMapper userMapper;
 
     /**
      * 跳转到主页
      */
+    @ApiOperation("跳转到主页")
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String index(Model model) {
-        //获取菜单列表
+        //获取菜单列表  （角色集）roleid集 即角色的唯一id值
         List<Integer> roleList = ShiroKit.getUser().getRoleList();
-        if (roleList == null || roleList.size() == 0) {
-            ShiroKit.getSubject().logout();
+        if (roleList == null || roleList.size() == 0) { //判断用户是否分配有角色
+            ShiroKit.getSubject().logout();//退出subject.logout();
             model.addAttribute("tips", "该用户没有角色，无法登陆");
             return "/login.html";
         }
-        List<MenuNode> menus = menuService.getMenusByRoleIds(roleList);
-        List<MenuNode> titles = MenuNode.buildTitle(menus);
-        titles = ApiMenuFilter.build(titles);
+        List<MenuNode> menus = menuDao.getMenusByRoleIds(roleList);//根据角色获取菜单
+        List<MenuNode> titles = MenuNode.buildTitle(menus);//构建菜单列表
+        titles = ApiMenuFilter.build(titles);//api接口文档显示过滤
 
         model.addAttribute("titles", titles);
 
         //获取用户头像
         Integer id = ShiroKit.getUser().getId();
-        User user = userService.selectById(id);
-        String avatar = user.getAvatar();
+        User user = userMapper.selectById(id);
+        String avatar = user.getAvatar();//头像的名称
         model.addAttribute("avatar", avatar);
 
         return "/index.html";
@@ -70,7 +74,9 @@ public class LoginController extends BaseController {
 
     /**
      * 跳转到登录页面
+     * 通过身份验证：true，否则 false ShiroKit.isAuthenticated()
      */
+    @ApiOperation("跳转到登录页面")
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String login() {
         if (ShiroKit.isAuthenticated() || ShiroKit.getUser() != null) {
@@ -83,6 +89,7 @@ public class LoginController extends BaseController {
     /**
      * 点击登录执行的动作
      */
+    @ApiOperation("点击登录执行的动作")
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public String loginVali() {
 
@@ -124,6 +131,7 @@ public class LoginController extends BaseController {
     /**
      * 退出登录
      */
+    @ApiOperation("退出登录")
     @RequestMapping(value = "/logout", method = RequestMethod.GET)
     public String logOut() {
         LogManager.me().executeLog(LogTaskFactory.exitLog(ShiroKit.getUser().getId(), getIp()));

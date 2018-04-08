@@ -6,6 +6,7 @@ import com.stylefeng.guns.generator.action.config.WebGeneratorConfig;
 import com.stylefeng.guns.generator.action.model.GenQo;
 import com.stylefeng.guns.modular.code.factory.DefaultTemplateFactory;
 import com.stylefeng.guns.modular.code.service.TableService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author fengshuonan
  * @Date 2017年11月30日16:39:19
  */
+@Api("代码生成控制器")
 @Controller
 @RequestMapping("/code")
 public class CodeController extends BaseController {
@@ -32,9 +34,11 @@ public class CodeController extends BaseController {
     @Autowired
     private DruidProperties druidProperties;
 
+
     /**
      * 跳转到代码生成主页
      */
+    @ApiOperation("跳转到代码生成主页")
     @RequestMapping("")
     public String blackboard(Model model) {
         model.addAttribute("tables", tableService.getAllTables());
@@ -47,7 +51,7 @@ public class CodeController extends BaseController {
      * 生成代码
      */
     @ApiOperation("生成代码")
-    @RequestMapping(value = "/generate", method = RequestMethod.POST)
+    @RequestMapping(value = "/generate", method ={RequestMethod.POST,RequestMethod.GET})
     @ResponseBody
     public Object generate(GenQo genQo) {
         genQo.setUrl(druidProperties.getUrl());

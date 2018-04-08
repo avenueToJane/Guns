@@ -39,13 +39,11 @@ public class FlowableConfig extends AbstractProcessEngineAutoConfiguration {
         return dataSource;
     }
 
-    /**
-     * spring-flowable拓展配置
-     */
     @Bean
     public SpringProcessEngineConfiguration springProcessEngineConfiguration(
             PlatformTransactionManager transactionManager,
             SpringAsyncExecutor springAsyncExecutor) throws IOException {
+
         SpringProcessEngineConfiguration configuration = this.baseSpringProcessEngineConfiguration(flowableDataSource(), transactionManager, springAsyncExecutor);
         configuration.setActivityFontName("宋体");
         configuration.setLabelFontName("宋体");

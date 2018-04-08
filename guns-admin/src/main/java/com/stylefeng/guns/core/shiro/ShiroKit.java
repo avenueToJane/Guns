@@ -15,8 +15,8 @@
  */
 package com.stylefeng.guns.core.shiro;
 
-import com.stylefeng.guns.core.common.constant.Const;
-import com.stylefeng.guns.core.common.constant.factory.ConstantFactory;
+import com.stylefeng.guns.common.constant.Const;
+import com.stylefeng.guns.common.constant.factory.ConstantFactory;
 import com.stylefeng.guns.core.util.ToolUtil;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.crypto.hash.Md5Hash;
@@ -69,7 +69,8 @@ public class ShiroKit {
 
     /**
      * 获取当前 Subject
-     *
+     * 通过org.apache.shiro.SecurityUtils可以查询当前执行用户
+     *  SecurityUtils.getSubject()
      * @return Subject
      */
     public static Subject getSubject() {
@@ -78,7 +79,7 @@ public class ShiroKit {
 
     /**
      * 获取封装的 ShiroUser
-     *
+     * Shiro的subject实质上是当前执行用户的特定视图
      * @return ShiroUser
      */
     public static ShiroUser getUser() {

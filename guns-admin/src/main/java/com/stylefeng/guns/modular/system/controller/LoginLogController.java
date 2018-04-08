@@ -2,20 +2,23 @@ package com.stylefeng.guns.modular.system.controller;
 
 import com.baomidou.mybatisplus.mapper.SqlRunner;
 import com.baomidou.mybatisplus.plugins.Page;
+import com.stylefeng.guns.common.annotion.BussinessLog;
+import com.stylefeng.guns.common.annotion.Permission;
+import com.stylefeng.guns.common.constant.Const;
+import com.stylefeng.guns.common.constant.factory.PageFactory;
+import com.stylefeng.guns.common.persistence.model.OperationLog;
 import com.stylefeng.guns.core.base.controller.BaseController;
-import com.stylefeng.guns.core.common.annotion.BussinessLog;
-import com.stylefeng.guns.core.common.annotion.Permission;
-import com.stylefeng.guns.core.common.constant.Const;
-import com.stylefeng.guns.core.common.constant.factory.PageFactory;
-import com.stylefeng.guns.modular.system.model.OperationLog;
-import com.stylefeng.guns.modular.system.service.ILoginLogService;
+import com.stylefeng.guns.modular.system.dao.LogDao;
 import com.stylefeng.guns.modular.system.warpper.LogWarpper;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 
@@ -25,19 +28,22 @@ import java.util.Map;
  * @author fengshuonan
  * @Date 2017年4月5日 19:45:36
  */
+@Api("日志管理的控制器")
 @Controller
 @RequestMapping("/loginLog")
 public class LoginLogController extends BaseController {
 
     private static String PREFIX = "/system/log/";
 
-    @Autowired
-    private ILoginLogService loginLogService;
+    @Resource
+    private LogDao logDao;
 
     /**
      * 跳转到日志管理的首页
      */
-    @RequestMapping("")
+    
+    @ApiOperation("跳转到日志管理的首页")
+    @RequestMapping(value="",method ={RequestMethod.POST,RequestMethod.GET})
     public String index() {
         return PREFIX + "login_log.html";
     }
@@ -45,12 +51,13 @@ public class LoginLogController extends BaseController {
     /**
      * 查询登录日志列表
      */
-    @RequestMapping("/list")
+    @ApiOperation("查询登录日志列表")
+    @RequestMapping(value = "/list",method ={RequestMethod.POST,RequestMethod.GET})
     @Permission(Const.ADMIN_NAME)
     @ResponseBody
     public Object list(@RequestParam(required = false) String beginTime, @RequestParam(required = false) String endTime, @RequestParam(required = false) String logName) {
         Page<OperationLog> page = new PageFactory<OperationLog>().defaultPage();
-        List<Map<String, Object>> result = loginLogService.getLoginLogs(page, beginTime, endTime, logName, page.getOrderByField(), page.isAsc());
+        List<Map<String, Object>> result = logDao.getLoginLogs(page, beginTime, endTime, logName, page.getOrderByField(), page.isAsc());
         page.setRecords((List<OperationLog>) new LogWarpper(result).warp());
         return super.packForBT(page);
     }
@@ -58,12 +65,13 @@ public class LoginLogController extends BaseController {
     /**
      * 清空日志
      */
+    @ApiOperation("查询登录日志列表")
     @BussinessLog("清空登录日志")
-    @RequestMapping("/delLoginLog")
+    @RequestMapping(value = "/delLoginLog",method ={RequestMethod.POST,RequestMethod.GET})
     @Permission(Const.ADMIN_NAME)
     @ResponseBody
     public Object delLog() {
         SqlRunner.db().delete("delete from sys_login_log");
-        return SUCCESS_TIP;
+        return super.SUCCESS_TIP;
     }
 }

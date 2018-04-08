@@ -2,23 +2,23 @@ package com.stylefeng.guns.modular.system.controller;
 
 import com.baomidou.mybatisplus.mapper.SqlRunner;
 import com.baomidou.mybatisplus.plugins.Page;
+import com.stylefeng.guns.common.annotion.BussinessLog;
+import com.stylefeng.guns.common.annotion.Permission;
+import com.stylefeng.guns.common.constant.Const;
+import com.stylefeng.guns.common.constant.factory.PageFactory;
+import com.stylefeng.guns.common.constant.state.BizLogType;
+import com.stylefeng.guns.common.persistence.dao.OperationLogMapper;
+import com.stylefeng.guns.common.persistence.model.OperationLog;
 import com.stylefeng.guns.core.base.controller.BaseController;
-import com.stylefeng.guns.core.common.annotion.BussinessLog;
-import com.stylefeng.guns.core.common.annotion.Permission;
-import com.stylefeng.guns.core.common.constant.Const;
-import com.stylefeng.guns.core.common.constant.factory.PageFactory;
-import com.stylefeng.guns.core.common.constant.state.BizLogType;
 import com.stylefeng.guns.core.support.BeanKit;
-import com.stylefeng.guns.modular.system.model.OperationLog;
-import com.stylefeng.guns.modular.system.service.IOperationLogService;
+import com.stylefeng.guns.modular.system.dao.LogDao;
 import com.stylefeng.guns.modular.system.warpper.LogWarpper;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 
@@ -28,19 +28,24 @@ import java.util.Map;
  * @author fengshuonan
  * @Date 2017年4月5日 19:45:36
  */
+@Api("日志管理的控制器")
 @Controller
 @RequestMapping("/log")
 public class LogController extends BaseController {
 
     private static String PREFIX = "/system/log/";
 
-    @Autowired
-    private IOperationLogService operationLogService;
+    @Resource
+    private OperationLogMapper operationLogMapper;
+
+    @Resource
+    private LogDao logDao;
 
     /**
      * 跳转到日志管理的首页
      */
-    @RequestMapping("")
+    @ApiOperation("跳转到日志管理的首页")
+    @RequestMapping(value="",method ={RequestMethod.POST,RequestMethod.GET})
     public String index() {
         return PREFIX + "log.html";
     }
@@ -48,12 +53,13 @@ public class LogController extends BaseController {
     /**
      * 查询操作日志列表
      */
-    @RequestMapping("/list")
+    @ApiOperation("查询操作日志列表")
+    @RequestMapping(value = "/list",method ={RequestMethod.POST,RequestMethod.GET})
     @Permission(Const.ADMIN_NAME)
     @ResponseBody
     public Object list(@RequestParam(required = false) String beginTime, @RequestParam(required = false) String endTime, @RequestParam(required = false) String logName, @RequestParam(required = false) Integer logType) {
         Page<OperationLog> page = new PageFactory<OperationLog>().defaultPage();
-        List<Map<String, Object>> result = operationLogService.getOperationLogs(page, beginTime, endTime, logName, BizLogType.valueOf(logType), page.getOrderByField(), page.isAsc());
+        List<Map<String, Object>> result = logDao.getOperationLogs(page, beginTime, endTime, logName, BizLogType.valueOf(logType), page.getOrderByField(), page.isAsc());
         page.setRecords((List<OperationLog>) new LogWarpper(result).warp());
         return super.packForBT(page);
     }
@@ -61,11 +67,12 @@ public class LogController extends BaseController {
     /**
      * 查询操作日志详情
      */
-    @RequestMapping("/detail/{id}")
+    @ApiOperation("查询操作日志详情")
+    @RequestMapping(value = "/detail/{id}",method ={RequestMethod.POST,RequestMethod.GET})
     @Permission(Const.ADMIN_NAME)
     @ResponseBody
     public Object detail(@PathVariable Integer id) {
-        OperationLog operationLog = operationLogService.selectById(id);
+        OperationLog operationLog = operationLogMapper.selectById(id);
         Map<String, Object> stringObjectMap = BeanKit.beanToMap(operationLog);
         return super.warpObject(new LogWarpper(stringObjectMap));
     }
@@ -73,12 +80,13 @@ public class LogController extends BaseController {
     /**
      * 清空日志
      */
+    @ApiOperation("清空日志")
     @BussinessLog(value = "清空业务日志")
-    @RequestMapping("/delLog")
+    @RequestMapping(value = "/delLog",method ={RequestMethod.POST,RequestMethod.GET})
     @Permission(Const.ADMIN_NAME)
     @ResponseBody
     public Object delLog() {
         SqlRunner.db().delete("delete from sys_operation_log");
-        return SUCCESS_TIP;
+        return super.SUCCESS_TIP;
     }
 }
